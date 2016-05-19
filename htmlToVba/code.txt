@@ -1,0 +1,20 @@
+Dim strSQL As String
+Dim myDB As DAO.Database
+Dim myRST As DAO.Recordset
+Dim fso As Object
+Dim Fileout As Object
+Set myDB = CurrentDb
+strSQL = "SELECT * FROM tblPersoneel"
+Set myRST = myDB.OpenRecordset(strSQL, dbOpenDynaset, dbSeeChanges)
+If myRST.BOF And myRST.EOF Then
+Exit Sub
+End If
+Set fso = CreateObject("Scripting.FileSystemObject")
+Set Fileout = fso.CreateTextFile("C:\export", True, True)
+myRST.MoveFirst
+Do While Not myRST.EOF
+Fileout.Write "<html>lolollolhtml<" + str(myRST("fldNaam"))
+Fileout.Write ">lklmj" + str(myRST("fldBuggishh"))
+Fileout.Write "lollo"
+myRST.MoveNext
+Loop

@@ -31,6 +31,7 @@ int main() {
 	system("pause");
 	system("cls");
 	
+	generateCode(strHTML);
 }
 
 ifstream openFile() {
@@ -59,18 +60,80 @@ ifstream openFile() {
 void generateCode(string strHTML) {
 	//Init vars
 	ofstream fileOutput("code.txt");
-	string strDBName;
-	string strRSTName;
-
+	string strTBLName;
+	string strSQL;
+	string strFso;
+	string strOutputPath;
 	string strCurrentLine;
+	string strFldName;
 	size_t startPos = 0;
+	short int replaceCount = 0;
+	long positionStart = 0;
+	long positionEnd = 0;
 
 	//Get VBA variable names
+	cout << "Name of table to get fields from (Case sensitive): ";
+	getline(cin, strTBLName);
+	cout << "Path where VBA will put the file (filename and extension included): ";
+	getline(cin, strOutputPath);
 
+	//Start writing default code
+	cout << endl << "Starting code generation, please wait..." << endl;
+	fileOutput << "Dim strSQL As String" << endl;
+	fileOutput << "Dim myDB As DAO.Database" << endl;
+	fileOutput << "Dim myRST As DAO.Recordset" << endl;
+	fileOutput << "Dim fso As Object" << endl;
+	fileOutput << "Dim Fileout As Object" << endl; 
+	fileOutput << "Set myDB = CurrentDb" << endl;
+	strSQL = "strSQL = \"SELECT * FROM ";
+	strSQL.append(strTBLName);
+	strSQL.append("\"");
+	fileOutput << strSQL << endl;
+	fileOutput << "Set myRST = myDB.OpenRecordset(strSQL, dbOpenDynaset, dbSeeChanges)" << endl;
+	fileOutput << "If myRST.BOF And myRST.EOF Then" << endl;
+	fileOutput << "Exit Sub" << endl;
+	fileOutput << "End If" << endl;
+	fileOutput << "Set fso = CreateObject(\"Scripting.FileSystemObject\")" << endl;
+	strFso = "Set Fileout = fso.CreateTextFile(\"";
+	strFso.append(strOutputPath);
+	strFso.append("\", True, True)");
+	fileOutput << strFso << endl;
+	fileOutput << "myRST.MoveFirst" << endl;
+	fileOutput << "Do While Not myRST.EOF" << endl;
 
-	while () {
-		strHTML.find(from, start_pos)
+	//Start writing dynamic code
+	while (strHTML.find("@@@", startPos) != string::npos) {
+		strCurrentLine = "Fileout.Write \"";
+		positionStart = strHTML.find("@@@", startPos) + 3;
+		positionEnd = strHTML.find("@@@", positionStart);
+		strFldName = strHTML.substr(positionStart, positionEnd - positionStart);
+		strCurrentLine.append(strHTML.substr(0, positionStart - 3));
+		strCurrentLine.append("\"");
+		strCurrentLine.append(" + str(myRST(\"");
+		strCurrentLine.append(strFldName);
+		strCurrentLine.append("\"))");
+		fileOutput << strCurrentLine << endl;
+		strHTML = strHTML.substr(positionEnd + 3, strHTML.length() + 1);
+
+		replaceCount++;
 	}
+	strCurrentLine = "Fileout.Write \"";
+	strCurrentLine.append(strHTML);
+	strCurrentLine.append("\"");
+	fileOutput << strCurrentLine << endl;
+
+	//Fileout.Write "your string goes here"
+
+	//Continue writing default code
+	fileOutput << "myRST.MoveNext" << endl;
+	fileOutput << "Loop" << endl;
+
+	//Save file
+	fileOutput.close();
+
+	cout << "Replaced " << replaceCount << " strings with fields" << endl;
+
+	system("pause");
 }
 
 string ReplaceAll(string str, const string& from, const string& to) {
