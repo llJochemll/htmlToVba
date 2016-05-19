@@ -10,11 +10,17 @@ If myRST.BOF And myRST.EOF Then
 Exit Sub
 End If
 Set fso = CreateObject("Scripting.FileSystemObject")
-Set Fileout = fso.CreateTextFile("C:\export", True, True)
+Set Fileout = fso.CreateTextFile("C:\Users\Jochem\Desktop\new.html", True, True)
+Fileout.Write "<!DOCTYPE html><html><head>    <meta name=""author"" content=""Jochem"" />    <meta charset=""UTF-8"">    <title>Crossplatform</title>    <link href=""styleBase.css"" rel=""stylesheet"">    <link href=""styleMonitor.css"" rel=""stylesheet"" id=""varCss""></head><body>"
 myRST.MoveFirst
 Do While Not myRST.EOF
-Fileout.Write "<html>lolollolhtml<" + str(myRST("fldNaam"))
-Fileout.Write ">lklmj" + str(myRST("fldBuggishh"))
-Fileout.Write "lollo"
+Fileout.Write "	<a>"
+If isNumeric(myRST("naam")) THEN
+Fileout.Write str(myRST("naam"))
+Else
+Fileout.Write myRST("naam")
+End If
+Fileout.Write "</a>"
 myRST.MoveNext
 Loop
+Fileout.Write "</body></html>"

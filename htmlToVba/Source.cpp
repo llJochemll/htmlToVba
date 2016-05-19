@@ -1,3 +1,6 @@
+//////////////////////////
+//Program made by Jochem//
+//////////////////////////
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -66,10 +69,18 @@ void generateCode(string strHTML) {
 	string strOutputPath;
 	string strCurrentLine;
 	string strFldName;
+	string strHTMLRepeat;
+	string strHTMLRepeatOrg;
+	string strHTMLHeader;
+	string strHTMLFooter;
 	size_t startPos = 0;
 	short int replaceCount = 0;
+	short int fldType = -1;
 	long positionStart = 0;
 	long positionEnd = 0;
+
+	//Prepare string
+	strHTML = ReplaceAll(strHTML, "\"", "\"\"");
 
 	//Get VBA variable names
 	cout << "Name of table to get fields from (Case sensitive): ";
@@ -98,35 +109,69 @@ void generateCode(string strHTML) {
 	strFso.append(strOutputPath);
 	strFso.append("\", True, True)");
 	fileOutput << strFso << endl;
-	fileOutput << "myRST.MoveFirst" << endl;
-	fileOutput << "Do While Not myRST.EOF" << endl;
 
-	//Start writing dynamic code
-	while (strHTML.find("@@@", startPos) != string::npos) {
-		strCurrentLine = "Fileout.Write \"";
-		positionStart = strHTML.find("@@@", startPos) + 3;
-		positionEnd = strHTML.find("@@@", positionStart);
-		strFldName = strHTML.substr(positionStart, positionEnd - positionStart);
-		strCurrentLine.append(strHTML.substr(0, positionStart - 3));
-		strCurrentLine.append("\"");
-		strCurrentLine.append(" + str(myRST(\"");
-		strCurrentLine.append(strFldName);
-		strCurrentLine.append("\"))");
-		fileOutput << strCurrentLine << endl;
-		strHTML = strHTML.substr(positionEnd + 3, strHTML.length() + 1);
-
-		replaceCount++;
-	}
+	//Write static html
+	positionStart = strHTML.find("###", startPos) + 3;
+	positionEnd = strHTML.find("###", positionStart);
+	strHTMLRepeatOrg = strHTML.substr(positionStart, positionEnd - positionStart);
+	strHTMLHeader = strHTML.substr(0, positionStart - 3);
+	strHTMLFooter = strHTML.substr(positionEnd + 3, strHTML.length());
 	strCurrentLine = "Fileout.Write \"";
-	strCurrentLine.append(strHTML);
+	strCurrentLine.append(strHTMLHeader);
 	strCurrentLine.append("\"");
 	fileOutput << strCurrentLine << endl;
 
-	//Fileout.Write "your string goes here"
+	//More default code
+	fileOutput << "myRST.MoveFirst" << endl;
+	fileOutput << "Do While Not myRST.EOF" << endl;
 
+	//Write dynamic html
+	while (strHTMLRepeatOrg.find("@@@", startPos) != string::npos) {
+		strHTMLRepeat = strHTMLRepeatOrg;
+		strCurrentLine = "Fileout.Write \"";
+		positionStart = strHTMLRepeat.find("@@@", startPos) + 3;
+		positionEnd = strHTMLRepeat.find("@@@", positionStart);
+		strFldName = strHTMLRepeat.substr(positionStart, positionEnd - positionStart);
+
+		//Check for number
+		
+
+		strCurrentLine.append(strHTMLRepeat.substr(0, positionStart - 3));
+		strCurrentLine.append("\"");
+		fileOutput << strCurrentLine << endl;
+		strCurrentLine = "If isNumeric(myRST(\"";
+		strCurrentLine.append(strFldName);
+		strCurrentLine.append("\")) THEN");
+		fileOutput << strCurrentLine << endl;
+		strCurrentLine = "str(myRST(\"";
+		strCurrentLine.append(strFldName);
+		strCurrentLine.append("\"))");
+		fileOutput << "Fileout.Write " << strCurrentLine << endl;
+		fileOutput << "Else" << endl;
+		strCurrentLine = "myRST(\"";
+		strCurrentLine.append(strFldName);
+		strCurrentLine.append("\")");
+		fileOutput << "Fileout.Write " << strCurrentLine << endl;
+		fileOutput << "End If" << endl;
+		strHTMLRepeat = strHTMLRepeat.substr(positionEnd + 3, strHTMLRepeat.length() + 1);
+		strCurrentLine = "Fileout.Write \"";
+		strCurrentLine.append(strHTMLRepeat);
+		strCurrentLine.append("\"");
+		fileOutput << strCurrentLine << endl;
+
+		replaceCount++;
+		startPos = positionEnd + 3;
+	}
+	
 	//Continue writing default code
 	fileOutput << "myRST.MoveNext" << endl;
 	fileOutput << "Loop" << endl;
+
+	//Write more static html
+	strCurrentLine = "Fileout.Write \"";
+	strCurrentLine.append(strHTMLFooter);
+	strCurrentLine.append("\"");
+	fileOutput << strCurrentLine << endl;
 
 	//Save file
 	fileOutput.close();
@@ -136,6 +181,7 @@ void generateCode(string strHTML) {
 	system("pause");
 }
 
+//This part is not my code
 string ReplaceAll(string str, const string& from, const string& to) {
 	size_t start_pos = 0;
 	while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
