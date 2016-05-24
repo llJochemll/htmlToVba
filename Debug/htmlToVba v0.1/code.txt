@@ -10,7 +10,7 @@ If myRST.BOF And myRST.EOF Then
 Exit Sub
 End If
 Set fso = CreateObject("Scripting.FileSystemObject")
-Set Fileout = fso.CreateTextFile("C:\Users\jd041199\Desktop\jonas.html", True, True)
+Set Fileout = fso.CreateTextFile("C:\Users\jd041199\Desktop\new2.html", True, True)
 Fileout.Write "<!DOCTYPE html><html><head><link rel=""icon"" type=""image/x-icon"" href=""afbeeldingen/favicon.ico""><link rel=""stylesheet"" type=""text/css"" href=""style.css"">	<title>Find your love - Home</title></head><body class=""HB"">	"
 myRST.MoveFirst
 Do While Not myRST.EOF
@@ -20,7 +20,8 @@ Fileout.Write str(myRST("naam"))
 Else
 Fileout.Write myRST("naam")
 End If
-Fileout.Write " | "
+Fileout.Write "|@@@voornaam@@@</a></br>	"
+Fileout.Write "	<a>@@@naam@@@|"
 If isNumeric(myRST("voornaam")) THEN
 Fileout.Write str(myRST("voornaam"))
 Else

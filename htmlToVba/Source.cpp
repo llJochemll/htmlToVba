@@ -125,11 +125,12 @@ void generateCode(string strHTML) {
 	fileOutput << "myRST.MoveFirst" << endl;
 	fileOutput << "Do While Not myRST.EOF" << endl;
 
+	strHTMLRepeat = strHTMLRepeatOrg;
 	//Write dynamic html
-	while (strHTMLRepeatOrg.find("@@@", startPos) != string::npos) {
-		strHTMLRepeat = strHTMLRepeatOrg;
+	while (strHTMLRepeat.find("@@@", 0) != string::npos) {
+		
 		strCurrentLine = "Fileout.Write \"";
-		positionStart = strHTMLRepeat.find("@@@", startPos) + 3;
+		positionStart = strHTMLRepeat.find("@@@", 0) + 3;
 		positionEnd = strHTMLRepeat.find("@@@", positionStart);
 		strFldName = strHTMLRepeat.substr(positionStart, positionEnd - positionStart);
 
@@ -154,14 +155,18 @@ void generateCode(string strHTML) {
 		fileOutput << "Fileout.Write " << strCurrentLine << endl;
 		fileOutput << "End If" << endl;
 		strHTMLRepeat = strHTMLRepeat.substr(positionEnd + 3, strHTMLRepeat.length() + 1);
-		strCurrentLine = "Fileout.Write \"";
+		/*strCurrentLine = "Fileout.Write \"";
 		strCurrentLine.append(strHTMLRepeat);
 		strCurrentLine.append("\"");
-		fileOutput << strCurrentLine << endl;
+		fileOutput << strCurrentLine << endl;*/
 
 		replaceCount++;
 		startPos = positionEnd + 3;
 	}
+	strCurrentLine = "Fileout.Write \"";
+	strCurrentLine.append(strHTMLRepeat);
+	strCurrentLine.append("\"");
+	fileOutput << strCurrentLine << endl;
 	
 	//Continue writing default code
 	fileOutput << "myRST.MoveNext" << endl;
